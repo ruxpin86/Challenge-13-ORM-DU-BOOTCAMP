@@ -7,6 +7,7 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/',async (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
+  try{
   let result = await Product.findAll({include:[
     {
       model: Category
@@ -16,6 +17,10 @@ router.get('/',async (req, res) => {
     }
   ]})
   res.status(200).json(result)
+} catch(err) {
+  console.log(err)
+  res.status(500).json(err)
+}
 });
 
 // get one product
@@ -38,11 +43,11 @@ router.get('/:id', async (req, res) => {
 });
 
 // create new product
-router.post('/', (req, res) => {
+router.post('/',  (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
-      price: 200.00,
+      price: 50.00,
       stock: 3,
       tagIds: [1, 2, 3, 4]
     }
@@ -57,7 +62,7 @@ router.post('/', (req, res) => {
             tag_id,
           };
         });
-        return ProductTag.bulkCreate(productTagIdArr);
+        return ProductTag.bulkCreate(productTagIdArr);// pushing the data created to the database, and creating 1 entry per tag
       }
       // if no product tags, just respond
       res.status(200).json(product);
@@ -111,8 +116,14 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   // delete one product by its `id` value
+  const delProduct = await Product.destroy({
+    where:{
+      id: req.params.id
+    }
+  })
+  res.status(200).json(delProduct)
 });
 
 module.exports = router;
